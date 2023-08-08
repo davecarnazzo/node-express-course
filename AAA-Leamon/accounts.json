@@ -1,0 +1,28 @@
+[
+    {
+      "name": "Paper Trade",
+      "balance": 200000,
+      "committedCapital": 0
+    },
+    {
+      "name": "Dave",
+      "balance": 75000,
+      "committedCapital": 0
+    },
+    {
+      "name": "RISK",
+      "balance": 10000,
+      "committedCapital": 0
+    },
+    {
+      "name": "Luke",
+      "balance": 10000,
+      "committedCapital": 0
+    },
+    {
+      "name": "IRA",
+      "balance": 400000,
+      "committedCapital": 0
+    }
+  ]
+  

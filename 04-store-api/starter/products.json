@@ -104,16 +104,19 @@
   {
     "name": "wooden bed",
     "price": 25,
+    "featured": false,
     "company": "ikea"
   },
   {
     "name": "wooden desk",
     "price": 15,
+    "featured": false,
     "company": "ikea"
   },
   {
     "name": "wooden desk",
     "price": 40,
+    "featured": false,
     "company": "ikea"
   },
   {
