@@ -9,10 +9,27 @@ const accountSchema = new mongoose.Schema(
     date: {
       type: Date,
     },
-    balance:{
+    startingBalance:{
       type: Number,
       default: 0.00,
     },
+    endingBalance:{
+      type: Number,
+      default: 0.00,
+    },
+    change: 
+    [ 
+      {
+        amount: {
+        type: Number,
+        default: 0.00,
+        },
+        type: {
+         type: String,
+        enum: ['deposit', 'withdrawal', 'interest', 'gain', 'loss', 'balance'],
+        },
+      }
+    ],
     createdBy: {
       type: mongoose.Types.ObjectId,
       ref: 'User',

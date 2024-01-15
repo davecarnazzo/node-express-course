@@ -1,0 +1,167 @@
+input lengthSMA1  = 20;
+input lengthSMA2  = 50;
+input lengthSMA3 = 100;
+input averageType = AverageType.SIMPLE;
+input expirationDate = 20231223;
+##def expirationDate = 20231223;
+#def price = FundamentalType.CLOSE;
+
+##input day_of_week = {default Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday};
+##def dayOfWeek = GetDayofWeek(GetYYYYMMDD()) ; # == day_of_week);
+##def dayOfMonth = GetDayofMonth(GetYyyyMmDd());
+##def thisFriday ; # = getDay();
+##def daysToExp = close(GetNextExpirationOption());
+
+def aggPeriod1 = GetAggregationPeriod() ;
+def aggPeriod2 ;
+
+def scoreAggPeriod1_SMA1 ;
+def scoreAggPeriod1_SMA2 ;
+def scoreAggPeriod1_SMA3 ;
+def scoreAggPeriod1_Close;
+
+def scoreAggPeriod2_SMA1 ;
+def scoreAggPeriod2_SMA2 ;
+def scoreAggPeriod2_SMA3 ;
+def scoreAggPeriod2_Close;
+
+def scoreAggPeriod1  = scoreAggPeriod1_SMA1 + scoreAggPeriod1_SMA2 + scoreAggPeriod1_SMA3 + scoreAggPeriod1_Close;
+
+def scoreAggPeriod2;
+#def scoreAggPeriod2 = scoreAggPeriod2_SMA1 + scoreAggPeriod2_SMA2 + #scoreAggPeriod2_SMA3 + scoreAggPeriod2_Close;
+
+def score = scoreAggPeriod1 + scoreAggPeriod2;
+def deltaScore ;
+
+#def DeltaScorePrice = close(GetOption(GetUnderlyingSymbol(), 20231223, OptionClass.PUT));
+def ATMPutPrice = close(GetATMOption(GetUnderlyingSymbol(), expirationDate, OptionClass.PUT));
+
+if AggPeriod1 < AggregationPeriod.THIRTY_MIN {
+    aggPeriod2 = aggregationPeriod.THIRTY_MIN ;
+} else if AggPeriod1 == AggregationPeriod.THIRTY_MIN {
+    aggPeriod2 = AggregationPeriod.HOUR ;
+} else if AggPeriod1 == AggregationPeriod.HOUR {
+    aggPeriod2 = AggregationPeriod.FOUR_HOURS ;
+} else if AggPeriod1 == AggregationPeriod.FOUR_HOURS {
+    aggPeriod2 = AggregationPeriod.DAY ;
+} else if AggPeriod1 == AggregationPeriod.DAY {
+    aggPeriod2 = AggregationPeriod.WEEK ;
+} else if AggPeriod1 == AggregationPeriod.WEEK {
+    aggPeriod2 = AggregationPeriod.MONTH ;
+} else if AggPeriod1 == AggregationPeriod.MONTH {
+    aggPeriod2 = AggregationPeriod.QUARTER ;
+} else {
+    aggPeriod2 = AggregationPeriod.WEEK ;
+}
+
+## Score for Day
+if close > SimpleMovingAvg(close(period = aggPeriod1), lengthSMA1, 0, no ) {
+    scoreAggPeriod1_SMA1 = 2 ;
+} else {
+    scoreAggPeriod1_SMA1 = 0 ;
+}
+
+if close > SimpleMovingAvg(close(period = aggPeriod1), lengthSMA2, 0, no ) {
+    scoreAggPeriod1_SMA2 = 1 ;
+} else {
+    scoreAggPeriod1_SMA2 = 0 ;
+}
+
+if close > SimpleMovingAvg(close(period = aggPeriod1), lengthSMA3, 0, no ) {
+    scoreAggPeriod1_SMA3 = 1 ;
+} else {
+    scoreAggPeriod1_SMA3 = 0 ;
+}
+
+
+if close > (close(period = aggPeriod1) from 1 bar ago) 
+and close > open(period = aggPeriod1)  
+{
+    scoreAggPeriod1_Close = 1;
+} else {
+    scoreAggPeriod1_Close = 0;
+};
+
+### Score for Aggregation Period 2
+
+if close > SimpleMovingAvg(close(period = aggPeriod2), lengthSMA1, 0, no ) {
+    scoreAggPeriod2_SMA1 = 2 ;
+} else {
+    scoreAggPeriod2_SMA1 = 0 ;
+} 
+
+if close > SimpleMovingAvg(close(period = aggPeriod2), lengthSMA2, 0, no ) {
+    scoreAggPeriod2_SMA2 = 1 ;
+} else {
+    scoreAggPeriod2_SMA2 = 0 ;
+} 
+
+if close > SimpleMovingAvg(close(period = aggPeriod2), lengthSMA3, 0, no ) {
+    scoreAggPeriod2_SMA3 = 1 ;
+} else {
+    scoreAggPeriod2_SMA3 = 0 ;
+} 
+
+if close > (close(period = aggPeriod2) from 1 bar ago) 
+and close > (open(period = aggPeriod2) from 1 bar ago)
+and close >  open(period = aggPeriod2)
+{
+    scoreAggPeriod2_Close = 1;
+} else {
+    scoreAggPeriod2_Close = 0;
+}
+
+if aggPeriod1 == AggregationPeriod.QUARTER {
+scoreAggPeriod2 = 0;
+} else {
+scoreAggPeriod2 = scoreAggPeriod2_SMA1 + scoreAggPeriod2_SMA2 + scoreAggPeriod2_SMA3 + scoreAggPeriod2_Close;
+}
+
+if score == 10 {
+    deltaScore = 25 ;
+} else if score >= 7 {
+    deltaScore = 18 ;
+} else if score >= 6 {
+    deltaScore = 15 ;
+} else {
+    deltaScore = 0 ;
+}
+
+
+##if dayOfWeek == 2 {
+##    thisFriday = (expirationDate + 3);
+##}  else {
+##    thisFriday = GetDayofMonth(GetYyyyMmDd());
+##}
+##AddLabel(yes, Concat("expires=", daysToExp), Color.Gray);
+##AddLabel(yes, Concat("Today is=", dayOfWeek), Color.Gray);
+##AddLabel(yes, Concat("today=", dayOfMonth), Color.GRAY);
+##AddLabel(yes, Concat("OptionDay=", thisFriday), Color.Gray);
+
+AddLabel(yes, Concat(" Score=", score), Color.GRAY);
+AddLabel(yes, Concat(" DeltaScore=", deltaScore ), Color.GRAY);
+AddLabel(yes, Concat(" PUT=", ATMPutPrice),Color.WHITE);
+
+
+#> Aggregation Identification Label
+AddLabel(yes, (" " +
+if AggPeriod1 == AggregationPeriod.MIN then "1 / 30 Min"
+else if AggPeriod1 == AggregationPeriod.FIVE_MIN then "5 / 30 Min"
+else if AggPeriod1 == AggregationPeriod.FIFTEEN_MIN then "15 / 30 Min"
+else if AggPeriod1 == AggregationPeriod.THIRTY_MIN then "30 Min / 1 Hr"
+else if AggPeriod1 == AggregationPeriod.HOUR then "1 Hr / 4 Hr"
+else if AggPeriod1 == AggregationPeriod.FOUR_HOURS then "4 Hr / Daily"
+else if AggPeriod1 == AggregationPeriod.DAY then "Daily / Weekly"
+else if AggPeriod1 == AggregationPeriod.WEEK then "Weekly / Monthly"
+else if AggPeriod1 == AggregationPeriod.MONTH then "Monthly / Quarterly"
+else if aggPeriod1 == AggregationPeriod.QUARTER then "Quarterly score does not have a secondary"
+else "Use time charts only") + " Aggregation ",
+  Color.WHITE);
+
+#AddLabel(yes, Concat("AggPeriod1=", aggPeriod1), Color.GRAY);
+#AddLabel(yes, Concat("AggPeriod2=", aggPeriod2), Color.GRAY);
+#AddLabel(yes, concat(" Hour=", AggregationPeriod.HOUR), Color.GRAY);
+#AddLabel(yes, concat(" Day=", AggregationPeriod.Day), Color.GRAY);
+#AddLabel(yes, concat(" Week=", AggregationPeriod.WEEK), Color.GRAY);
+#AddLabel(yes, concat(" Month=", AggregationPeriod.MONTH), Color.GRAY);
+#AddLabel(yes, concat(" Quarter=", AggregationPeriod.QUARTER), Color.GRAY);
